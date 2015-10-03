@@ -129,16 +129,51 @@ ggplot(reds, aes(x=factor(quality))) +
 
 **Comments:** Clearly, most wines were given mid-range scores.
 
+```{r echo=FALSE}
+# helper functions
+hist <- function(col) {
+  ggplot(reds, aes_string(x = col)) +
+    geom_histogram(binwidth = (max(reds[col]) - min(reds[col]))/30) +
+    labs(x = labelize(col))
+}
+```
+
+##### visualize alcohol
+```{r viz_alcohol, echo=FALSE, cache=TRUE, cache.path= 'cache/', fig.path= 'figure/'}
+hist('alcohol')
+```
+
+##### visualize volatile.acidity
+```{r viz_vol_acid, echo=FALSE, cache=TRUE, cache.path= 'cache/', fig.path= 'figure/'}
+hist('volatile.acidity')
+```
+
+##### visualize sulphates
+```{r viz_sulph, echo=FALSE, cache=TRUE, cache.path= 'cache/', fig.path= 'figure/'}
+hist('sulphates')
+```
+
+**Reason for these plots:** I wanted to visualize the distribution of each of these three categories because of the information gained by later plots (that were originally located at the beginning, but, due to project requirements, had to be moved to later sections).
+
+**Comments:** Non-normal distributions.
+
 ------
 
 ## Bivariate Plots Section
 
 Examine correlations:
+
 ```{r corrlelations, echo=FALSE, cache=TRUE, cache.path= 'cache/', fig.path= 'figure/'}
 # subset reds (arbitrarily) by index number for use in ggpairs
-ggpairs(reds[c(2,3,4,13)])
-ggpairs(reds[c(5,6,7,8,13)])
-ggpairs(reds[c(9,10,11,12,13)])
+ggpairs(reds[c(2,3,4,13)]) + 
+  theme(axis.line=element_blank(),
+        axis.text=element_blank(),
+        axis.ticks=element_blank())
+
+ggpairs(reds[c(9,10,11,12,13)]) + 
+  theme(axis.line=element_blank(),
+        axis.text=element_blank(),
+        axis.ticks=element_blank())
 ```
 
 **Reason for these plots:** I wanted to visualize the relationship of categories to one another.
@@ -360,25 +395,6 @@ scatter_vs(reds_3_8, 'alcohol', 'sulphates')
 
 **Comments:** I see pretty solid visual evidence of clustering, further confirming the relationship between these three categories and quality scores.
 
-##### alcohol vs volatile.acidity, colored by quality, sized by sulphates
-```{r alc_vol_acid_sulph_qual, echo=FALSE, cache=TRUE, cache.path= 'cache/', fig.path= 'figure/'}
-ggplot(reds, aes(x = alcohol, y = volatile.acidity)) + 
-  geom_point(aes(colour = factor(quality), size = sulphates), alpha = 0.7) +
-  labs(x = labelize('alcohol'), y = labelize('volatile.acidity'))
-```
-
-**Reason for this plot:** Continuing the investigation of the above plots, I wanted to attempt to visualize all four types of values.
-
-**Comments:** It's difficult to see, but there does seem to be clustering with the addition of sulphates.
-
-##### alcohol vs volatile.acidity, colored by quality, sized by sulphates, with contour lines showing overall quantity clustering
-```{r alc_vol_acid_sulph_qual_cont, echo=FALSE, cache=TRUE, cache.path= 'cache/', fig.path= 'figure/'}
-ggplot(reds, aes(x = alcohol, y = volatile.acidity)) + 
-  geom_point(aes(colour = factor(quality), size = sulphates), alpha = 0.7) +
-  geom_density2d(show_guide=FALSE) +
-  labs(x = labelize('alcohol'), y = labelize('volatile.acidity'))
-```
-
 ##### alcohol vs volatile.acidity with only contour lines colored by quality showing quality clusters
 ```{r alc_vol_acid_sulph_qual_col_cont, echo=FALSE, cache=TRUE, cache.path= 'cache/', fig.path= 'figure/'}
 ggplot(reds, aes(x = alcohol, y = volatile.acidity)) + 
@@ -451,10 +467,10 @@ Strength of this model: it works for the obvious cases. Weakness of this model: 
 # Final Plots and Summary
 
 ### Plot One
-##### alcohol vs volatile.acidity, colored by alcohol, sized by sulphates, faceted by quality
+##### alcohol vs volatile.acidity, colored by alcohol, faceted by quality
 ```{r final1, echo=FALSE, cache=TRUE, cache.path= 'cache/', fig.path= 'figure/'}
 ggplot(reds, aes(x = alcohol, y = volatile.acidity)) +
-  geom_point(aes(colour = alcohol, size = sulphates), alpha=0.7) +
+  geom_point(aes(colour = alcohol), alpha=0.7) +
   scale_colour_gradient(low = 'blue', high = 'orange') +
   facet_grid(. ~ quality) +
   ggtitle('Alcohol vs Volatile.Acidity by Quality Score') +
@@ -465,21 +481,21 @@ ggplot(reds, aes(x = alcohol, y = volatile.acidity)) +
 This plot makes it easy to see the distribution of quality scores (most are in the middle), the rightward trend of alcohol content, the downward slope of volatile.acidity, and the mid-range sweet-spot of sulphates levels all in relation to quality scoring.
 
 ### Plot Two
-##### quality vs alcohol, colored by volatile.acidity, sized by sulphates, with a smoothing line
+##### quality vs alcohol, colored by volatile.acidity, with a smoothing line
 ```{r final2, echo=FALSE, cache=TRUE, cache.path= 'cache/', fig.path= 'figure/'}
 ggplot(reds, aes(x = quality, y = alcohol)) +
   geom_point(alpha = 0.7,
              position = position_jitter(h = 0),
-             aes(colour = volatile.acidity,
-                 size = sulphates)) +
+             aes(colour = volatile.acidity)) +
   scale_colour_gradient(low = 'blue', high = 'yellow') +
   stat_smooth(method = 'lm', colour = 'green') +
   ggtitle('Quality vs Alcohol') +
-  labs(x = labelize('quality'), y = labelize('alcohol'))
+  labs(y = labelize('alcohol'))
 ```
 
+
 ### Description Two
-Although alcohol and quality are swapped from their perhaps expected axis locations, the swapping, along with the smoothing line, makes it clear that as quality increases, so do alcohol content (and, thus, the reverse relationship is true). Volatile.acidity and sulphates continue to play supporting roles. 
+Although alcohol and quality are swapped from their perhaps expected axis locations, the swapping, along with the smoothing line, makes it clear that as quality increases, so do alcohol content (and, thus, the reverse relationship is true). Volatile.acidity continues to play a supporting role. 
 
 ### Plot Three
 ##### alcohol vs volatile.acidity with only clusters colored by quality
